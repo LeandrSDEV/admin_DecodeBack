@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/decode_admin}
+    username: ${SPRING_DATASOURCE_USERNAME:decode}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
+logging:
+  level:
+    org.springframework.security: INFO

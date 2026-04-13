@@ -1,0 +1,7 @@
+package br.com.portal.decode_api.enums;
+
+public enum SiteStatus {
+    OK,
+    SLOW,
+    DOWN
+}

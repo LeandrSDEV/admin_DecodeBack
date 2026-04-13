@@ -1,0 +1,1 @@
+-- V05: legacy migration kept for compatibility. No-op.

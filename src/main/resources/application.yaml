@@ -1,0 +1,82 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  application:
+    name: decode-api
+
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/decode_admin}
+    username: ${SPRING_DATASOURCE_USERNAME:decode}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+
+  # Para o job de monitoramento (scheduler)
+  task:
+    scheduling:
+      pool:
+        size: 2
+
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET}
+    expiration-ms: 231800000
+
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,https://gestao-decode.lovable.app}
+
+  security:
+    refresh-expiration-ms: ${APP_REFRESH_EXPIRATION_MS:2592000000} # 30 dias
+    sse:
+      allow-query-token: ${APP_SSE_ALLOW_QUERY_TOKEN:true}
+
+  rate-limit:
+    enabled: ${APP_RATE_LIMIT_ENABLED:true}
+    login-per-minute: ${APP_RATE_LIMIT_LOGIN_PER_MINUTE:12}
+    api-per-second: ${APP_RATE_LIMIT_API_PER_SECOND:25}
+
+  monitoring:
+    # Intervalo padrão do job que checa os sites. Ajuste via env.
+    poll-interval-ms: ${APP_MONITORING_POLL_INTERVAL_MS:60000}
+
+  pushover:
+    enabled: ${APP_PUSHOVER_ENABLED:false}
+    token: ${APP_PUSHOVER_TOKEN:}
+    user: ${APP_PUSHOVER_USER:}
+
+  affiliate:
+    base-rate: ${APP_AFFILIATE_BASE_RATE:15.00}
+    bonus-rate: ${APP_AFFILIATE_BONUS_RATE:18.00}
+    bonus-threshold: ${APP_AFFILIATE_BONUS_THRESHOLD:5}
+    carencia-months: ${APP_AFFILIATE_CARENCIA_MONTHS:2}
+    jwt-secret: ${APP_AFFILIATE_JWT_SECRET:${APP_JWT_SECRET}}
+    jwt-expiration-ms: ${APP_AFFILIATE_JWT_EXPIRATION_MS:86400000}
+    portal-base-url: ${APP_AFFILIATE_PORTAL_BASE_URL:https://decodeapp.com/afiliado}
+    landing-base-url: ${APP_AFFILIATE_LANDING_BASE_URL:https://gestao-decode.lovable.app}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
