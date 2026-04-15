@@ -108,6 +108,21 @@ public class TenantProxyService {
         }
     }
 
+    public ResponseEntity<String> getConfig(Long id) {
+        ensureConfigured();
+        return exchange(() -> client.get().uri("/{id}/config", id).retrieve().body(String.class));
+    }
+
+    public ResponseEntity<String> updateConfig(Long id, Map<String, Object> body) {
+        ensureConfigured();
+        return exchange(() -> client.put()
+                .uri("/{id}/config", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .body(String.class));
+    }
+
     /**
      * Executa a chamada upstream e devolve uma ResponseEntity NOVA com
      * Content-Type application/json — sem propagar headers do upstream.

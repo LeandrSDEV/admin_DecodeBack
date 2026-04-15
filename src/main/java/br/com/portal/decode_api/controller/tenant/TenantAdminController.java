@@ -57,6 +57,16 @@ public class TenantAdminController {
         return proxy.suspend(id);
     }
 
+    @GetMapping("/{id}/config")
+    public ResponseEntity<String> getConfig(@PathVariable Long id) {
+        return proxy.getConfig(id);
+    }
+
+    @PutMapping("/{id}/config")
+    public ResponseEntity<String> updateConfig(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        return proxy.updateConfig(id, body);
+    }
+
     @ExceptionHandler(TenantProxyService.TenancyProxyException.class)
     public ResponseEntity<Map<String, Object>> handleProxyError(TenantProxyService.TenancyProxyException e) {
         return ResponseEntity.status(e.getStatus()).body(Map.of(
