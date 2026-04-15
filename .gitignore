@@ -31,3 +31,39 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Logs ###
+*.log
+*.log.*
+logs/
+
+### Segredos locais (NUNCA commitar com valores reais) ###
+.env
+.env.local
+.env.*.local
+application-local.yml
+application-local.yaml
+application-secrets.yml
+application-secrets.yaml
+application-secrets.properties
+
+### Credenciais / chaves ###
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+
+### Uploads / dados de runtime ###
+uploads/
+/data/
+
+### OS ###
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+### Crash reports JVM ###
+hs_err_pid*
+replay_pid*
