@@ -25,7 +25,7 @@ import java.util.Map;
  * Role exigida: ADMIN.
  */
 @RestController
-@RequestMapping("/api/tenancy")
+@RequestMapping("/api/admin/tenants")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class TenantAdminController {
