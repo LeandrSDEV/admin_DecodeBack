@@ -3,7 +3,7 @@ package br.com.portal.decode_api.service.tenant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,6 +11,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Encaminha requisições de gestão de tenants para o backend operacional
@@ -20,6 +21,13 @@ import java.util.Map;
  * Env vars exigidas:
  *   - APP_TENANCY_BASE_URL        (ex: https://decode.portaledtech.com)
  *   - APP_TENANCY_SERVICE_TOKEN   (mesmo valor configurado em lanchonetev14.0)
+ *
+ * IMPORTANTE: a resposta devolvida para o cliente é uma ResponseEntity
+ * construída do zero — só o body é propagado do upstream. NÃO repassamos
+ * os headers do upstream porque isso vaza detalhes internos (tipo
+ * X-Tenant-Resolved do filtro multi-tenant) e pode incluir headers
+ * HTTP/2 inválidos em HTTP/1.1 (ex: ":status"), que fazem o Traefik
+ * rejeitar a resposta com "Internal Server Error".
  */
 @Service
 public class TenantProxyService {
@@ -60,21 +68,21 @@ public class TenantProxyService {
 
     public ResponseEntity<String> list() {
         ensureConfigured();
-        return exchange(() -> client.get().retrieve().toEntity(String.class));
+        return exchange(() -> client.get().retrieve().body(String.class));
     }
 
     public ResponseEntity<String> get(Long id) {
         ensureConfigured();
-        return exchange(() -> client.get().uri("/{id}", id).retrieve().toEntity(String.class));
+        return exchange(() -> client.get().uri("/{id}", id).retrieve().body(String.class));
     }
 
     public ResponseEntity<String> create(Map<String, Object> body) {
         ensureConfigured();
-        return exchange(() -> client.post()
+        return exchangeCreated(() -> client.post()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
-                .toEntity(String.class));
+                .body(String.class));
     }
 
     public ResponseEntity<String> update(Long id, Map<String, Object> body) {
@@ -84,31 +92,63 @@ public class TenantProxyService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
-                .toEntity(String.class));
+                .body(String.class));
     }
 
     public ResponseEntity<String> suspend(Long id) {
         ensureConfigured();
-        return exchange(() -> client.delete()
-                .uri("/{id}", id)
-                .retrieve()
-                .toEntity(String.class));
-    }
-
-    private ResponseEntity<String> exchange(java.util.function.Supplier<ResponseEntity<String>> call) {
         try {
-            return call.get();
+            client.delete().uri("/{id}", id).retrieve().toBodilessEntity();
+            return ResponseEntity.noContent().build();
         } catch (HttpStatusCodeException e) {
-            HttpStatusCode status = e.getStatusCode();
-            String body = e.getResponseBodyAsString();
-            log.warn("[tenancy-proxy] upstream retornou {}: {}", status, body);
-            return ResponseEntity.status(status)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body == null || body.isBlank() ? "{\"error\":\"upstream error\"}" : body);
+            return upstreamError(e);
         } catch (Exception e) {
             log.error("[tenancy-proxy] falha ao chamar upstream", e);
             throw new TenancyProxyException(502, "Falha ao comunicar com o backend operacional: " + e.getMessage());
         }
+    }
+
+    /**
+     * Executa a chamada upstream e devolve uma ResponseEntity NOVA com
+     * Content-Type application/json — sem propagar headers do upstream.
+     */
+    private ResponseEntity<String> exchange(Supplier<String> call) {
+        try {
+            String body = call.get();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body == null ? "null" : body);
+        } catch (HttpStatusCodeException e) {
+            return upstreamError(e);
+        } catch (Exception e) {
+            log.error("[tenancy-proxy] falha ao chamar upstream", e);
+            throw new TenancyProxyException(502, "Falha ao comunicar com o backend operacional: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Variante para POST create que devolve 201 Created.
+     */
+    private ResponseEntity<String> exchangeCreated(Supplier<String> call) {
+        try {
+            String body = call.get();
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body == null ? "null" : body);
+        } catch (HttpStatusCodeException e) {
+            return upstreamError(e);
+        } catch (Exception e) {
+            log.error("[tenancy-proxy] falha ao chamar upstream", e);
+            throw new TenancyProxyException(502, "Falha ao comunicar com o backend operacional: " + e.getMessage());
+        }
+    }
+
+    private ResponseEntity<String> upstreamError(HttpStatusCodeException e) {
+        String body = e.getResponseBodyAsString();
+        log.warn("[tenancy-proxy] upstream retornou {}: {}", e.getStatusCode(), body);
+        return ResponseEntity.status(e.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body == null || body.isBlank() ? "{\"error\":\"upstream error\"}" : body);
     }
 
     public static class TenancyProxyException extends RuntimeException {
