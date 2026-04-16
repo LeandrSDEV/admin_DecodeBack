@@ -1,5 +1,6 @@
 package br.com.portal.decode_api.entity;
 
+import br.com.portal.decode_api.enums.SubscriptionModule;
 import br.com.portal.decode_api.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,6 +35,10 @@ public class SubscriptionEntity {
 
     @Column(name = "client_name", length = 160)
     private String clientName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private SubscriptionModule module;
 
     @Column(name = "plan_name", nullable = false, length = 120)
     private String planName;

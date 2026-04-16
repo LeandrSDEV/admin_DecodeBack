@@ -16,6 +16,7 @@ public record DecodeResponse(
         BigDecimal monthlyRevenue,
         UUID affiliateId,
         String affiliateName,
+        Long tenantId,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

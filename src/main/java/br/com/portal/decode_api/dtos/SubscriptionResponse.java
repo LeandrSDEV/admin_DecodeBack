@@ -1,5 +1,6 @@
 package br.com.portal.decode_api.dtos;
 
+import br.com.portal.decode_api.enums.SubscriptionModule;
 import br.com.portal.decode_api.enums.SubscriptionStatus;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ public record SubscriptionResponse(
         String decodeCode,
         String establishmentName,
         String clientName,
+        SubscriptionModule module,
         String planName,
         BigDecimal price,
         BigDecimal discountPct,

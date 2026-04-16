@@ -124,6 +124,32 @@ public class TenantProxyService {
     }
 
     /**
+     * Sincroniza a data de expiração da assinatura com o tenant operacional.
+     * Chamado automaticamente ao criar/renovar assinaturas.
+     */
+    public void syncSubscriptionExpiration(Long tenantId, String subscriptionExpiresAtIso) {
+        if (tenantId == null) {
+            log.debug("[tenancy-proxy] tenantId nulo — sync de assinatura ignorado");
+            return;
+        }
+        if (!configured) {
+            log.warn("[tenancy-proxy] proxy não configurado — sync de assinatura ignorado");
+            return;
+        }
+        try {
+            client.put()
+                    .uri("/{id}", tenantId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("subscriptionExpiresAt", subscriptionExpiresAtIso))
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("[tenancy-proxy] assinatura sincronizada: tenantId={}, expiresAt={}", tenantId, subscriptionExpiresAtIso);
+        } catch (Exception e) {
+            log.error("[tenancy-proxy] falha ao sincronizar assinatura para tenant {}: {}", tenantId, e.getMessage());
+        }
+    }
+
+    /**
      * Executa a chamada upstream e devolve uma ResponseEntity NOVA com
      * Content-Type application/json — sem propagar headers do upstream.
      */

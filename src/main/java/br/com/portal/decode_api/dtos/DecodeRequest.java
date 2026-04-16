@@ -14,6 +14,7 @@ public record DecodeRequest(
         DecodeStatus status,
         @PositiveOrZero Integer usersCount,
         @PositiveOrZero BigDecimal monthlyRevenue,
-        UUID affiliateId
+        UUID affiliateId,
+        Long tenantId
 ) {
 }

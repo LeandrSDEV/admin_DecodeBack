@@ -48,6 +48,9 @@ public class DecodeEntity {
     @JoinColumn(name = "affiliate_id")
     private AffiliateEntity affiliate;
 
+    @Column(name = "tenant_id")
+    private Long tenantId;
+
     @Column(name = "affiliate_attached_at")
     private LocalDateTime affiliateAttachedAt;
 

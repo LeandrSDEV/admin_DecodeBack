@@ -50,6 +50,7 @@ public class DecodeService {
                 .monthlyRevenue(req.monthlyRevenue())
                 .affiliate(affiliate)
                 .affiliateAttachedAt(LocalDateTime.now())
+                .tenantId(req.tenantId())
                 .build();
 
         DecodeEntity saved = decodeRepository.save(entity);
@@ -78,6 +79,8 @@ public class DecodeService {
             }
         }
 
+        if (req.tenantId() != null) entity.setTenantId(req.tenantId());
+
         log.info("Decode atualizado: id={}, afiliado={}", id,
                 entity.getAffiliate() != null ? entity.getAffiliate().getId() : null);
         return toResponse(decodeRepository.save(entity));
@@ -104,6 +107,7 @@ public class DecodeService {
                 d.getMonthlyRevenue(),
                 aff != null ? aff.getId() : null,
                 aff != null ? aff.getName() : null,
+                d.getTenantId(),
                 d.getCreatedAt(),
                 d.getUpdatedAt()
         );

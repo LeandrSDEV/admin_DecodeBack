@@ -1,6 +1,7 @@
 package br.com.portal.decode_api.repository;
 
 import br.com.portal.decode_api.entity.SubscriptionEntity;
+import br.com.portal.decode_api.enums.SubscriptionModule;
 import br.com.portal.decode_api.enums.SubscriptionStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +18,13 @@ public interface SubscriptionRepository extends JpaRepository<SubscriptionEntity
     Page<SubscriptionEntity> findByDecodeIdOrderByStartedAtDesc(UUID decodeId, Pageable pageable);
 
     Optional<SubscriptionEntity> findFirstByDecodeIdAndStatusOrderByStartedAtDesc(UUID decodeId, SubscriptionStatus status);
+
+    /** Busca assinatura ativa de um decode para um módulo específico. */
+    Optional<SubscriptionEntity> findFirstByDecodeIdAndModuleAndStatusOrderByStartedAtDesc(
+            UUID decodeId, SubscriptionModule module, SubscriptionStatus status);
+
+    /** Todas as assinaturas ativas de um decode (pode haver uma MESA e uma DELIVERY). */
+    List<SubscriptionEntity> findAllByDecodeIdAndStatus(UUID decodeId, SubscriptionStatus status);
 
     @Query("""
             select s from SubscriptionEntity s
