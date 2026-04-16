@@ -67,7 +67,7 @@ class DecodeServiceTest {
         DecodeEntity saved = makeEntity();
         when(decodeRepository.save(any())).thenReturn(saved);
 
-        DecodeRequest req = new DecodeRequest("Novo Decode", "Salvador", DecodeStatus.ACTIVE, 5, BigDecimal.TEN, null);
+        DecodeRequest req = new DecodeRequest("Novo Decode", "Salvador", DecodeStatus.ACTIVE, 5, BigDecimal.TEN, null, null);
         DecodeResponse response = decodeService.create(req);
 
         assertThat(response.name()).isEqualTo("Decode Teste");
@@ -81,7 +81,7 @@ class DecodeServiceTest {
         when(decodeRepository.findById(id)).thenReturn(Optional.of(entity));
         when(decodeRepository.save(any())).thenReturn(entity);
 
-        DecodeRequest req = new DecodeRequest("Updated", "Recife", null, null, null, null);
+        DecodeRequest req = new DecodeRequest("Updated", "Recife", null, null, null, null, null);
         DecodeResponse response = decodeService.update(id, req);
 
         assertThat(response).isNotNull();
@@ -94,7 +94,7 @@ class DecodeServiceTest {
         UUID id = UUID.randomUUID();
         when(decodeRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> decodeService.update(id, new DecodeRequest("x", "y", null, null, null, null)))
+        assertThatThrownBy(() -> decodeService.update(id, new DecodeRequest("x", "y", null, null, null, null, null)))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 

@@ -52,7 +52,7 @@ class DecodeControllerTest {
     void list_returns200WithPaginatedContent() throws Exception {
         DecodeResponse decode = new DecodeResponse(
                 UUID.randomUUID(), "D-001", "Decode Teste", "Aracaju",
-                DecodeStatus.ACTIVE, 10, BigDecimal.valueOf(5000), null, null, LocalDateTime.now(), LocalDateTime.now()
+                DecodeStatus.ACTIVE, 10, BigDecimal.valueOf(5000), null, null, null, LocalDateTime.now(), LocalDateTime.now()
         );
         when(decodeService.list(any(), any()))
                 .thenReturn(new PageImpl<>(List.of(decode), PageRequest.of(0, 20), 1));
@@ -67,7 +67,7 @@ class DecodeControllerTest {
     void create_validPayload_returns201() throws Exception {
         DecodeResponse decode = new DecodeResponse(
                 UUID.randomUUID(), "D-002", "Novo Decode", "Salvador",
-                DecodeStatus.ACTIVE, 5, BigDecimal.TEN, UUID.randomUUID(), "Afiliado X", LocalDateTime.now(), LocalDateTime.now()
+                DecodeStatus.ACTIVE, 5, BigDecimal.TEN, UUID.randomUUID(), "Afiliado X", null, LocalDateTime.now(), LocalDateTime.now()
         );
         when(decodeService.create(any())).thenReturn(decode);
 
