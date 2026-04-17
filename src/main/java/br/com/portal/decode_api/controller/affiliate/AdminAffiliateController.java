@@ -6,6 +6,7 @@ import br.com.portal.decode_api.entity.UserEntity;
 import br.com.portal.decode_api.enums.AffiliateStatus;
 import br.com.portal.decode_api.repository.AffiliateCommissionRepository;
 import br.com.portal.decode_api.repository.UserRepository;
+import br.com.portal.decode_api.service.affiliate.AffiliateDashboardService;
 import br.com.portal.decode_api.service.affiliate.AffiliatePayoutRunService;
 import br.com.portal.decode_api.service.affiliate.AffiliateService;
 import br.com.portal.decode_api.service.affiliate.CommissionCalculatorService;
@@ -37,6 +38,7 @@ public class AdminAffiliateController {
     private final AffiliatePayoutRunService payoutRunService;
     private final CommissionCalculatorService commissionCalculator;
     private final AffiliateCommissionRepository commissionRepository;
+    private final AffiliateDashboardService affiliateDashboardService;
     private final UserRepository userRepository;
 
     // -----------------------------------------------------------------
@@ -90,6 +92,15 @@ public class AdminAffiliateController {
     public ResponseEntity<Void> reactivate(@PathVariable UUID id) {
         affiliateService.reactivate(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Dashboard completo de um afiliado (mesmos KPIs que o afiliado ve no portal).
+     * Permite ao admin inspecionar a performance individual sem precisar logar como ele.
+     */
+    @GetMapping("/{id}/dashboard")
+    public AffiliateDashboardResponse dashboard(@PathVariable UUID id) {
+        return affiliateDashboardService.build(id);
     }
 
     // -----------------------------------------------------------------

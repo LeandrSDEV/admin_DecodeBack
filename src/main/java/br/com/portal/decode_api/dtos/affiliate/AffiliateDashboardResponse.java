@@ -2,25 +2,49 @@ package br.com.portal.decode_api.dtos.affiliate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
-/** Dashboard do portal do afiliado com mix de dados persistidos + estimativa em tempo real. */
+/**
+ * Dashboard do portal do afiliado: visao completa com estabelecimentos (decodes),
+ * comissoes (diario/mensal/total), situacao de repasses e serie temporal para
+ * grafico de alta/baixa.
+ */
 public record AffiliateDashboardResponse(
         String refCode,
-        String shareLink,                     // link pronto pra copiar com o ref
-        BigDecimal commissionRate,            // taxa atual aplicada ao afiliado
-        int activeClients,                    // clientes pagantes agora
-        int totalConversions,                 // total historico
-        BigDecimal lifetimeEarned,            // total ja pago + aprovado + pendente
-        BigDecimal currentMonthEstimate,      // estimativa do mes corrente (C)
-        BigDecimal lastMonthEarned,           // oficial do mes passado
-        BigDecimal pendingCarencia,           // em carencia
-        BigDecimal readyForPayout,            // aprovado, aguardando payout run
-        BigDecimal alreadyPaid,               // ja recebido
-        LocalDate nextPayoutDate,             // proxima data estimada de pagamento
+        String shareLink,
+        BigDecimal commissionRate,
+
+        // Estabelecimentos (decodes) que o afiliado trouxe
+        int decodesToday,
+        int decodesThisMonth,
+        int decodesTotal,
+        int activeClients,
+        int totalConversions,
+
+        // Comissao (valor)
+        BigDecimal dailyEarned,            // gerado hoje (comissoes com referenceMonth atual + decodes attached hoje)
+        BigDecimal currentMonthEstimate,   // estimativa em tempo real do mes corrente
+        BigDecimal lastMonthEarned,
+        BigDecimal lifetimeEarned,
+
+        // Repasses
+        BigDecimal pendingCarencia,        // segurando na carencia
+        BigDecimal readyForPayout,         // aprovado, falta pagar
+        BigDecimal alreadyPaid,            // ja repassado
+        LocalDate nextPayoutDate,
+
+        // Serie temporal para grafico alta/baixa (ultimos 30 dias)
+        List<DailyProduction> productionTrend,
+
+        // Breakdown mensal (6 meses)
         List<MonthlyBreakdown> lastSixMonths
 ) {
+    public record DailyProduction(
+            LocalDate date,
+            int decodes,
+            BigDecimal commissionAmount
+    ) {}
+
     public record MonthlyBreakdown(
             LocalDate month,
             int clientCount,

@@ -52,4 +52,33 @@ public interface DecodeRepository extends JpaRepository<DecodeEntity, UUID> {
             where d.affiliate.id = :affiliateId
             """)
     java.math.BigDecimal sumMonthlyRevenueByAffiliateId(@Param("affiliateId") UUID affiliateId);
+
+    @Query("""
+            select count(d) from DecodeEntity d
+            where d.affiliate.id = :affiliateId
+            """)
+    long countByAffiliateId(@Param("affiliateId") UUID affiliateId);
+
+    @Query("""
+            select count(d) from DecodeEntity d
+            where d.affiliate.id = :affiliateId
+              and coalesce(d.affiliateAttachedAt, d.createdAt) >= :start
+              and coalesce(d.affiliateAttachedAt, d.createdAt) < :end
+            """)
+    long countByAffiliateIdAndAttachedBetween(@Param("affiliateId") UUID affiliateId,
+                                               @Param("start") java.time.LocalDateTime start,
+                                               @Param("end") java.time.LocalDateTime end);
+
+    @Query("""
+            select cast(coalesce(d.affiliateAttachedAt, d.createdAt) as date) as day,
+                   count(d),
+                   coalesce(sum(d.monthlyRevenue), 0)
+            from DecodeEntity d
+            where d.affiliate.id = :affiliateId
+              and coalesce(d.affiliateAttachedAt, d.createdAt) >= :start
+            group by cast(coalesce(d.affiliateAttachedAt, d.createdAt) as date)
+            order by day
+            """)
+    List<Object[]> dailyProductionByAffiliateSince(@Param("affiliateId") UUID affiliateId,
+                                                    @Param("start") java.time.LocalDateTime start);
 }

@@ -2,15 +2,12 @@ package br.com.portal.decode_api.controller.affiliate;
 
 import br.com.portal.decode_api.config.AffiliateProperties;
 import br.com.portal.decode_api.dtos.affiliate.*;
-import br.com.portal.decode_api.entity.AffiliateCommissionEntity;
 import br.com.portal.decode_api.entity.AffiliateEntity;
-import br.com.portal.decode_api.enums.AffiliateCommissionStatus;
 import br.com.portal.decode_api.repository.AffiliateCommissionRepository;
-import br.com.portal.decode_api.repository.AffiliateReferralRepository;
 import br.com.portal.decode_api.repository.AffiliateRepository;
 import br.com.portal.decode_api.security.affiliate.AffiliatePrincipal;
 import br.com.portal.decode_api.service.affiliate.AffiliateAuthService;
-import br.com.portal.decode_api.service.affiliate.CommissionCalculatorService;
+import br.com.portal.decode_api.service.affiliate.AffiliateDashboardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,11 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,9 +33,8 @@ public class AffiliatePortalController {
 
     private final AffiliateAuthService authService;
     private final AffiliateRepository affiliateRepository;
-    private final AffiliateReferralRepository referralRepository;
     private final AffiliateCommissionRepository commissionRepository;
-    private final CommissionCalculatorService commissionCalculator;
+    private final AffiliateDashboardService dashboardService;
     private final AffiliateProperties props;
 
     // -----------------------------------------------------------------
@@ -93,56 +84,7 @@ public class AffiliatePortalController {
     @GetMapping("/dashboard")
     public AffiliateDashboardResponse dashboard(@AuthenticationPrincipal AffiliatePrincipal principal) {
         AffiliateEntity a = requireAffiliate(principal);
-
-        int activeClients = (int) referralRepository.countByAffiliateIdAndStatus(
-                a.getId(), br.com.portal.decode_api.enums.AffiliateReferralStatus.CONVERTED);
-        int totalConversions = activeClients
-                + (int) referralRepository.countByAffiliateIdAndStatus(
-                        a.getId(), br.com.portal.decode_api.enums.AffiliateReferralStatus.CHURNED);
-
-        BigDecimal paid = commissionRepository.sumAmountByAffiliateAndStatus(a.getId(), AffiliateCommissionStatus.PAID);
-        BigDecimal approved = commissionRepository.sumAmountByAffiliateAndStatus(a.getId(), AffiliateCommissionStatus.APPROVED);
-        BigDecimal pending = commissionRepository.sumAmountByAffiliateAndStatus(a.getId(), AffiliateCommissionStatus.PENDING);
-        BigDecimal lifetime = paid.add(approved).add(pending);
-
-        BigDecimal currentEstimate = commissionCalculator.estimateCurrentMonth(a.getId());
-        BigDecimal lastMonth = commissionRepository.sumAmountByAffiliateAndMonth(
-                a.getId(), YearMonth.now().minusMonths(1).atDay(1));
-
-        BigDecimal rate = a.getCustomCommissionRate() != null
-                ? a.getCustomCommissionRate() : props.getBaseRate();
-
-        String shareLink = props.getLandingBaseUrl() + "/?ref=" + a.getRefCode();
-
-        List<AffiliateDashboardResponse.MonthlyBreakdown> lastSix = new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
-            LocalDate month = YearMonth.now().minusMonths(i).atDay(1);
-            BigDecimal monthAmount = commissionRepository.sumAmountByAffiliateAndMonth(a.getId(), month);
-            List<AffiliateCommissionEntity> monthCommissions = commissionRepository
-                    .findByAffiliateIdAndReferenceMonth(a.getId(), month);
-            String status = monthCommissions.isEmpty() ? "NENHUMA" :
-                    monthCommissions.stream().anyMatch(c -> c.getStatus() == AffiliateCommissionStatus.PAID) ? "PAGO" :
-                    monthCommissions.stream().anyMatch(c -> c.getStatus() == AffiliateCommissionStatus.APPROVED) ? "APROVADO" :
-                    "PENDENTE";
-            lastSix.add(new AffiliateDashboardResponse.MonthlyBreakdown(
-                    month, monthCommissions.size(), monthAmount, status));
-        }
-
-        return new AffiliateDashboardResponse(
-                a.getRefCode(),
-                shareLink,
-                rate,
-                activeClients,
-                totalConversions,
-                lifetime,
-                currentEstimate,
-                lastMonth,
-                pending,
-                approved,
-                paid,
-                YearMonth.now().plusMonths(1).atDay(10),
-                lastSix
-        );
+        return dashboardService.build(a.getId());
     }
 
     // -----------------------------------------------------------------
