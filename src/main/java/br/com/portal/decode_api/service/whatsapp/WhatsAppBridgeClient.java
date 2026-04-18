@@ -9,6 +9,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
@@ -189,9 +190,16 @@ public class WhatsAppBridgeClient {
         if (current == null) {
             synchronized (this) {
                 if (restTemplate == null) {
+                    // SimpleClientHttpRequestFactory (HttpURLConnection legado) é usado
+                    // de propósito: o JdkClientHttpRequestFactory padrão do Spring 6.2
+                    // segue RFC 3986 estrito e rejeita hostnames com underscore (_),
+                    // que o Easypanel usa nos nomes internos de serviço
+                    // (ex.: testes-decode_whatsapp-bridge).
+                    SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+                    factory.setConnectTimeout((int) Math.max(1000, properties.getConnectTimeoutMs()));
+                    factory.setReadTimeout((int) Math.max(1000, properties.getReadTimeoutMs()));
                     restTemplate = restTemplateBuilder
-                            .setConnectTimeout(Duration.ofMillis(Math.max(1000, properties.getConnectTimeoutMs())))
-                            .setReadTimeout(Duration.ofMillis(Math.max(1000, properties.getReadTimeoutMs())))
+                            .requestFactory(() -> factory)
                             .build();
                 }
                 current = restTemplate;
