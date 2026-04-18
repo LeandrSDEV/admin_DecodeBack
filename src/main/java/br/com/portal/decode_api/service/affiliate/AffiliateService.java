@@ -16,6 +16,7 @@ import br.com.portal.decode_api.repository.DecodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,6 +45,7 @@ public class AffiliateService {
     private final DecodeRepository decodeRepository;
     private final br.com.portal.decode_api.repository.SubscriptionRepository subscriptionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     // -----------------------------------------------------------------
     // Cadastro publico (landing -> POST /api/public/affiliates/apply)
@@ -130,6 +132,17 @@ public class AffiliateService {
             log.info("Decode {} vinculado ao afiliado {}", decode.getId(), saved.getId());
         }
 
+        if (req.initialPassword() != null && !req.initialPassword().isBlank()) {
+            eventPublisher.publishEvent(new AffiliateApprovedEvent(
+                    saved.getId(),
+                    saved.getName(),
+                    saved.getEmail(),
+                    saved.getWhatsapp(),
+                    saved.getRefCode(),
+                    req.initialPassword()
+            ));
+        }
+
         return toResponse(saved);
     }
 
@@ -154,6 +167,16 @@ public class AffiliateService {
 
         AffiliateEntity saved = affiliateRepository.save(a);
         log.info("Afiliado aprovado: id={}, por={}", saved.getId(), approver.getEmail());
+
+        eventPublisher.publishEvent(new AffiliateApprovedEvent(
+                saved.getId(),
+                saved.getName(),
+                saved.getEmail(),
+                saved.getWhatsapp(),
+                saved.getRefCode(),
+                req.initialPassword()
+        ));
+
         return toResponse(saved);
     }
 

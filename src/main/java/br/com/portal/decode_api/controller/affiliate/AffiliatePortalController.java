@@ -8,6 +8,7 @@ import br.com.portal.decode_api.repository.AffiliateRepository;
 import br.com.portal.decode_api.security.affiliate.AffiliatePrincipal;
 import br.com.portal.decode_api.service.affiliate.AffiliateAuthService;
 import br.com.portal.decode_api.service.affiliate.AffiliateDashboardService;
+import br.com.portal.decode_api.service.affiliate.AffiliateDecodeSubmissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class AffiliatePortalController {
     private final AffiliateRepository affiliateRepository;
     private final AffiliateCommissionRepository commissionRepository;
     private final AffiliateDashboardService dashboardService;
+    private final AffiliateDecodeSubmissionService submissionService;
     private final AffiliateProperties props;
 
     // -----------------------------------------------------------------
@@ -112,6 +114,25 @@ public class AffiliatePortalController {
                         c.getPaidReference(),
                         null
                 ));
+    }
+
+    // -----------------------------------------------------------------
+    // Submissoes de estabelecimento (fechamentos do afiliado)
+    // -----------------------------------------------------------------
+    @PostMapping("/decode-submissions")
+    public AffiliateDecodeSubmissionResponse submitEstablishment(
+            @AuthenticationPrincipal AffiliatePrincipal principal,
+            @Valid @RequestBody AffiliateDecodeSubmissionRequest req) {
+        AffiliateEntity a = requireAffiliate(principal);
+        return submissionService.submit(a.getId(), req);
+    }
+
+    @GetMapping("/decode-submissions")
+    public Page<AffiliateDecodeSubmissionResponse> listMySubmissions(
+            @AuthenticationPrincipal AffiliatePrincipal principal,
+            Pageable pageable) {
+        AffiliateEntity a = requireAffiliate(principal);
+        return submissionService.listMine(a.getId(), pageable);
     }
 
     // -----------------------------------------------------------------

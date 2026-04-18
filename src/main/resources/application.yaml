@@ -75,6 +75,16 @@ app:
     portal-base-url: ${APP_AFFILIATE_PORTAL_BASE_URL:https://decodeapp.com/afiliado}
     landing-base-url: ${APP_AFFILIATE_LANDING_BASE_URL:https://gestao-decode.lovable.app}
 
+  whatsapp-bridge:
+    enabled: ${APP_WHATSAPP_BRIDGE_ENABLED:true}
+    base-url: ${APP_WHATSAPP_BRIDGE_BASE_URL:http://whatsapp-bridge:21465}
+    token: ${APP_WHATSAPP_BRIDGE_TOKEN:}
+    instance: ${APP_WHATSAPP_BRIDGE_INSTANCE:lanchonete}
+    connect-timeout-ms: ${APP_WHATSAPP_BRIDGE_CONNECT_TIMEOUT_MS:2500}
+    read-timeout-ms: ${APP_WHATSAPP_BRIDGE_READ_TIMEOUT_MS:7000}
+    send-attempts: ${APP_WHATSAPP_BRIDGE_SEND_ATTEMPTS:3}
+    send-retry-delay-ms: ${APP_WHATSAPP_BRIDGE_SEND_RETRY_DELAY_MS:400}
+
   tenancy:
     baseUrl: ${APP_TENANCY_BASE_URL:}
     serviceToken: ${APP_TENANCY_SERVICE_TOKEN:}
