@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
 import java.util.Map;
 
 /**
@@ -48,8 +50,16 @@ public class MetricsProxyService {
                     .baseUrl(trimmedBase + PATH)
                     .defaultHeader("X-Service-Token", trimmedToken)
                     .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+                    .requestFactory(shortTimeoutFactory())
                     .build();
         }
+    }
+
+    private static SimpleClientHttpRequestFactory shortTimeoutFactory() {
+        SimpleClientHttpRequestFactory f = new SimpleClientHttpRequestFactory();
+        f.setConnectTimeout((int) Duration.ofSeconds(3).toMillis());
+        f.setReadTimeout((int) Duration.ofSeconds(8).toMillis());
+        return f;
     }
 
     @SuppressWarnings("unchecked")

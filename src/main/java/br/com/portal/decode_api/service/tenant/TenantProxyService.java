@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -55,8 +57,18 @@ public class TenantProxyService {
                     .baseUrl(trimmedBase + BASE_PATH)
                     .defaultHeader("X-Service-Token", trimmedToken)
                     .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+                    .requestFactory(shortTimeoutFactory())
                     .build();
         }
+    }
+
+    /** Evita que uma lanchonete indisponivel deixe a request pendurada ate o Traefik
+     *  devolver HTML 502. 3s pra conectar, 8s pra ler. */
+    private static SimpleClientHttpRequestFactory shortTimeoutFactory() {
+        SimpleClientHttpRequestFactory f = new SimpleClientHttpRequestFactory();
+        f.setConnectTimeout((int) Duration.ofSeconds(3).toMillis());
+        f.setReadTimeout((int) Duration.ofSeconds(8).toMillis());
+        return f;
     }
 
     private void ensureConfigured() {
