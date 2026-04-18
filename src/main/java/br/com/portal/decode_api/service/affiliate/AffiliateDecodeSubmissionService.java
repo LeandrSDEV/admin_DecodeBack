@@ -19,6 +19,7 @@ import br.com.portal.decode_api.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,7 @@ public class AffiliateDecodeSubmissionService {
     private final DecodeRepository decodeRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final AffiliateReferralService referralService;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ==============================================================
     // Submissao pelo afiliado
@@ -196,8 +198,21 @@ public class AffiliateDecodeSubmissionService {
         sub.setReviewedAt(LocalDateTime.now());
         sub.setReviewedBy(reviewer);
         sub.setRejectionReason(reason);
+        AffiliateDecodeSubmissionEntity saved = submissionRepository.save(sub);
         log.info("Submission {} rejeitada por {}: {}", id, reviewer.getEmail(), reason);
-        return toResponse(submissionRepository.save(sub));
+
+        AffiliateEntity aff = saved.getAffiliate();
+        if (aff != null) {
+            eventPublisher.publishEvent(new AffiliateSubmissionRejectedEvent(
+                    saved.getId(),
+                    aff.getId(),
+                    aff.getName(),
+                    aff.getWhatsapp(),
+                    saved.getEstablishmentName(),
+                    reason
+            ));
+        }
+        return toResponse(saved);
     }
 
     // ==============================================================

@@ -92,4 +92,48 @@ public class AffiliateNotificationService {
         int space = trimmed.indexOf(' ');
         return space > 0 ? trimmed.substring(0, space) : trimmed;
     }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onAffiliateSubmissionRejected(AffiliateSubmissionRejectedEvent event) {
+        if (event.affiliateWhatsapp() == null || event.affiliateWhatsapp().isBlank()) {
+            log.warn("Submission {} rejeitada mas afiliado {} sem WhatsApp; notificacao pulada",
+                    event.submissionId(), event.affiliateId());
+            return;
+        }
+        if (!bridgeClient.isEnabled()) {
+            log.warn("whatsapp-bridge desabilitado; recusa da submission {} nao sera notificada",
+                    event.submissionId());
+            return;
+        }
+        try {
+            String message = buildRejectionMessage(event);
+            bridgeClient.sendText(event.affiliateWhatsapp(), message);
+            log.info("WhatsApp de recusa enviado ao afiliado {} (submission {})",
+                    event.affiliateId(), event.submissionId());
+        } catch (Exception e) {
+            log.error("Falha ao enviar WhatsApp de recusa para afiliado {}: {}",
+                    event.affiliateId(), e.getMessage(), e);
+        }
+    }
+
+    private String buildRejectionMessage(AffiliateSubmissionRejectedEvent event) {
+        String firstName = extractFirstName(event.affiliateName());
+        String reason = event.reason() != null && !event.reason().isBlank()
+                ? event.reason().trim()
+                : "sem detalhes adicionais";
+
+        return """
+                Ola, %s.
+
+                Sua solicitacao para o estabelecimento *%s* nao pode ser aprovada neste momento.
+
+                *Motivo informado pelo revisor:*
+                %s
+
+                Voce pode ajustar as informacoes e reenviar pelo portal do afiliado a qualquer momento. Se quiser conversar antes, e so responder esta mensagem.
+
+                Obrigado pela indicacao.
+                """.formatted(firstName, event.establishmentName(), reason);
+    }
 }

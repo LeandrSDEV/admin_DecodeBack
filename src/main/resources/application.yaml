@@ -79,7 +79,10 @@ app:
     enabled: ${APP_WHATSAPP_BRIDGE_ENABLED:true}
     base-url: ${APP_WHATSAPP_BRIDGE_BASE_URL:http://whatsapp-bridge:21465}
     token: ${APP_WHATSAPP_BRIDGE_TOKEN:}
-    instance: ${APP_WHATSAPP_BRIDGE_INSTANCE:lanchonete}
+    # Sessao Baileys dedicada do DECODE (numero unico que envia credenciais
+    # a afiliados). Isolada das sessoes dos restaurantes (tenants), que usam
+    # o proprio slug como instance.
+    instance: ${APP_WHATSAPP_BRIDGE_INSTANCE:decode-admin}
     connect-timeout-ms: ${APP_WHATSAPP_BRIDGE_CONNECT_TIMEOUT_MS:2500}
     read-timeout-ms: ${APP_WHATSAPP_BRIDGE_READ_TIMEOUT_MS:7000}
     send-attempts: ${APP_WHATSAPP_BRIDGE_SEND_ATTEMPTS:3}

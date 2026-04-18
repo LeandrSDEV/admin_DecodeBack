@@ -25,8 +25,11 @@ public class WhatsAppBridgeProperties {
     /** Token compartilhado com o bridge (header x-internal-token). */
     private String token = "";
 
-    /** Nome da instancia configurada no bridge. */
-    private String instance = "lanchonete";
+    /**
+     * Nome da instancia Baileys dedicada do Admin_Decode. Separada das sessoes
+     * dos tenants (que usam o proprio slug como instance).
+     */
+    private String instance = "decode-admin";
 
     /** Timeouts. */
     private long connectTimeoutMs = 2500;
