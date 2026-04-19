@@ -57,19 +57,21 @@ public class AffiliatePortalController {
     @GetMapping("/me")
     public Map<String, Object> me(@AuthenticationPrincipal AffiliatePrincipal principal) {
         AffiliateEntity a = requireAffiliate(principal);
-        return Map.of(
-                "id", a.getId(),
-                "name", a.getName(),
-                "email", a.getEmail(),
-                "refCode", a.getRefCode(),
-                "whatsapp", a.getWhatsapp(),
-                "status", a.getStatus(),
-                "mustChangePassword", Boolean.TRUE.equals(a.getMustChangePw()),
-                "pixKeyType", a.getPixKeyType(),
-                "pixKey", a.getPixKey(),
-                "commissionRate", a.getCustomCommissionRate() != null
-                        ? a.getCustomCommissionRate() : props.getBaseRate()
-        );
+        // HashMap (e não Map.of) porque campos opcionais como pixKeyType/pixKey/whatsapp
+        // podem ser null — Map.of lança NullPointerException com valores null.
+        java.util.Map<String, Object> body = new java.util.HashMap<>();
+        body.put("id", a.getId());
+        body.put("name", a.getName());
+        body.put("email", a.getEmail());
+        body.put("refCode", a.getRefCode());
+        body.put("whatsapp", a.getWhatsapp());
+        body.put("status", a.getStatus());
+        body.put("mustChangePassword", Boolean.TRUE.equals(a.getMustChangePw()));
+        body.put("pixKeyType", a.getPixKeyType());
+        body.put("pixKey", a.getPixKey());
+        body.put("commissionRate", a.getCustomCommissionRate() != null
+                ? a.getCustomCommissionRate() : props.getBaseRate());
+        return body;
     }
 
     @PostMapping("/me/change-password")
