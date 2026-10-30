@@ -1,5 +1,6 @@
 package br.com.portal.decode_api.controller.affiliate;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.portal.decode_api.dtos.affiliate.*;
 import br.com.portal.decode_api.entity.AffiliateCommissionEntity;
 import br.com.portal.decode_api.entity.UserEntity;
@@ -29,6 +30,7 @@ import java.util.UUID;
  * Endpoints administrativos para gestao do programa de afiliados.
  * Roles: ADMIN.
  */
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/api/admin/affiliates")
 @RequiredArgsConstructor

@@ -1,5 +1,6 @@
 package br.com.portal.decode_api.controller.affiliate;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.portal.decode_api.dtos.affiliate.AffiliateDecodeSubmissionRejectRequest;
 import br.com.portal.decode_api.dtos.affiliate.AffiliateDecodeSubmissionResponse;
 import br.com.portal.decode_api.entity.UserEntity;
@@ -21,6 +22,7 @@ import java.util.UUID;
  * Endpoints administrativos de revisao das propostas de estabelecimento
  * submetidas pelos afiliados.
  */
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/api/admin/decode-submissions")
 @RequiredArgsConstructor

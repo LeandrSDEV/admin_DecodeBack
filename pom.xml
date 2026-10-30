@@ -15,7 +15,7 @@
 	<artifactId>decode-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>decode-api</name>
-	<description>Demo project for Spring Boot</description>
+	<description>API do painel administrativo do DECODE</description>
 
 	<properties>
 		<java.version>21</java.version>

@@ -67,3 +67,6 @@ $RECYCLE.BIN/
 ### Crash reports JVM ###
 hs_err_pid*
 replay_pid*
+
+# configuração local do Claude Code
+.claude/
