@@ -126,7 +126,7 @@ A documentação interativa completa fica em `/swagger-ui.html` (OpenAPI em `/v3
 | GET | `/api/interactions/queue` | Contagem de interações por status |
 | GET / POST | `/api/interactions/{id}/messages` | Histórico / nova mensagem da interação |
 
-### Afiliados (admin) — `AdminAffiliateController` (`Autenticado`)
+### Afiliados (admin) — `AdminAffiliateController` (`ADMIN`)
 
 | Método | Rota | Descrição |
 |---|---|---|
@@ -143,7 +143,7 @@ A documentação interativa completa fica em `/swagger-ui.html` (OpenAPI em `/v3
 | GET | `/api/admin/affiliates/payout-runs/{runId}` · `/commissions` | Detalhe / comissões do run |
 | POST | `/api/admin/affiliates/payout-runs/{runId}/review` · `/execute` · `/cancel` | Avança ou cancela o ciclo do run |
 
-### Solicitações de estabelecimento — `AdminDecodeSubmissionController` (`Autenticado`)
+### Solicitações de estabelecimento — `AdminDecodeSubmissionController` (`ADMIN`)
 
 | Método | Rota | Descrição |
 |---|---|---|
@@ -230,7 +230,7 @@ Também ficam públicos: `/actuator/health`, `/actuator/info` e `/actuator/prome
 - **JWT HMAC** (jjwt 0.13), sessão *stateless*. O segredo precisa ter no mínimo 32 bytes; chaves menores são rejeitadas ao assinar ou validar tokens. O afiliado pode usar segredo próprio (`APP_AFFILIATE_JWT_SECRET`).
 - **Refresh token opaco:** 48 bytes aleatórios, armazenado apenas como hash SHA-256, com rotação a cada uso (o anterior é revogado e encadeado) e registro de IP e user agent. Validade padrão de 30 dias.
 - **Senhas com BCrypt.**
-- **Autorização por perfil:** `ADMIN` e `OPERATOR` para o painel; `@PreAuthorize("hasRole('ADMIN')")` em usuários, tenants, WhatsApp bridge e dashboard consolidado.
+- **Autorização por perfil:** `ADMIN` e `OPERATOR` para o painel; `@PreAuthorize("hasRole('ADMIN')")` em usuários, tenants, WhatsApp bridge, dashboard consolidado, afiliados (admin) e solicitações de estabelecimento.
 - **Rate limit em memória por IP:** 12 tentativas de login por minuto e 25 requisições por segundo na API (configurável).
 - **CORS** restrito à lista definida em `APP_CORS_ALLOWED_ORIGINS`.
 - **SSE:** como o `EventSource` do navegador não envia headers, o token pode ir por query string apenas em `/api/realtime/**` (desligável com `APP_SSE_ALLOW_QUERY_TOKEN=false`).
